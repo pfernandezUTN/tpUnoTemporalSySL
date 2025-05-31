@@ -116,7 +116,7 @@ int generarAxioma(gramatica *g, char *strAxioma) {
 	}
 
 	g->axioma = strAxioma[0];
-    printf("%c\n", g->axioma);
+    	printf("%c\n", g->axioma);
 	return 0;
 }
 
