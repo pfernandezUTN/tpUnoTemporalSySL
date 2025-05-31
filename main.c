@@ -34,13 +34,63 @@ int obtenerNumeroRandomEntreRango(int li, int ls) {
     return li + (rand() % (ls - li));
 }
 
-int generarTerminales(gramatica *g, char *strTerminales) { // hardcodeado
-	strcpy(g->terminales, "ab");
+int generarTerminales(gramatica *g, char *strTerminales) {
+	char *terminales = strtok(strTerminales, ",");
+	char terminalesProcesados[strlen(terminales)];
+	int contador = 0;
+
+    while (terminales != NULL) {
+		char terminal = terminales[0];
+
+		// Verfica la existencia de unicidad de los terminales
+        if (strchr(terminalesProcesados, terminal) != NULL) {
+			printf("Error: Se repite el elemento %c\n", terminal);
+			return 1;
+		}
+
+        // Verifica que los caracteres representen un terminal
+		if (!((terminal >= 97 && terminal <= 122) || (unsigned char)terminal == 195)){
+			printf("Error: El caracter %c no representa un elemento terminal\n", terminal);
+			return 1;
+		}
+
+		terminalesProcesados[contador] = terminal;
+		contador++;
+        terminales = strtok(NULL, ",");
+    }
+
+	strcpy(g->terminales, terminalesProcesados);
+	printf("%s\n", g->terminales);
 	return 0;
 }
 
 int generarNoTerminales(gramatica *g, char *strNoTerminales) { // hardcodeado
-	strcpy(g->noTerminales, "ST");
+	char *noTerminales = strtok(strNoTerminales, ",");
+	char noTerminalesProcesados[strlen(noTerminales)];
+	int contador = 0;
+
+    while (noTerminales != NULL) {
+		char noTerminal = noTerminales[0];
+
+		// Verfica la existencia de unicidad de los no terminales
+        if (strchr(noTerminalesProcesados, noTerminal) != NULL) {
+			printf("Error: Se repite el elemento %c\n", noTerminal);
+			return 1;
+		}
+
+        // Verifica que los caracteres representen un no terminal
+		if (!(noTerminal >= 65 && noTerminal <= 90)){
+			printf("Error: El caracter %c no representa un elemento no terminal\n", noTerminal);
+			return 1;
+		}
+
+		noTerminalesProcesados[contador] = noTerminal;
+		contador++;
+        noTerminales = strtok(NULL, ",");
+    }
+
+	strcpy(g->noTerminales, noTerminalesProcesados);
+	printf("%s\n", g->noTerminales);
 	return 0;
 }
 
@@ -53,11 +103,20 @@ int generarProducciones(gramatica *g, char *strProducciones, char *prodsString) 
 }
 
 int generarAxioma(gramatica *g, char *strAxioma) {
+	// Verfica que el axioma sea uno solo
 	if (strlen(strAxioma) != 1) {
 		printf("Error: Axioma invalido: \"%s\"", strAxioma);
 		return 1;
 	}
+	
+	// Verfica que el caracter represente un axioma
+	if (!(strAxioma[0] >= 65 && strAxioma[0] <= 90)){
+		printf("Error: El caracter %c no es axioma\n", strAxioma[0]);
+		return 1;
+	}
+
 	g->axioma = strAxioma[0];
+    printf("%c\n", g->axioma);
 	return 0;
 }
 
@@ -76,22 +135,22 @@ int generarGramatica(gramatica *g, char *strNoTerminales, char *strTerminales, c
 }
 
 
-
-
 // Formato de los argumentos: terminales noTerminales producciones axioma
 //                        EJ: S,T a,b S-\>aS,T-\>a,T-\>bT S
 // Cada argumento se separa con espacios y cada elemento de los mismos con comas. Hay que poner \ antes del > para que no quiera generar un archivo
 int main(int argc, char *argv[])
 {
 	// obtener e interpretar los argumentos, verificando que sea GF - Hecho, pero hardcodeado
-	gramatica g;
-	if (generarGramatica(&g, argv[1], argv[2], argv[3], argv[4]))
-    	return 1;
+	gramatica *g;
+	char terminales[] = "a,b,a";
+	generarTerminales (g, terminales);
+	// if (generarGramatica(&g, argv[1], argv[2], argv[3], argv[4]))
+    // 	return 1;
 	// generar cadenas pertenecientes a la gramatica - to do 
-	int cantGramaticasGenerar = 10;
-    printf("%d\n", obtenerNumeroRandomEntreRango(0,2));
-    printf("%d\n", obtenerNumeroRandomEntreRango(5,10));
-    printf("%d\n", obtenerNumeroRandomEntreRango(10,100));
+	// int cantGramaticasGenerar = 10;
+    // printf("%d\n", obtenerNumeroRandomEntreRango(0,2));
+    // printf("%d\n", obtenerNumeroRandomEntreRango(5,10));
+    // printf("%d\n", obtenerNumeroRandomEntreRango(10,100));
 
 	return 0;
 }
