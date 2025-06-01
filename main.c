@@ -79,18 +79,9 @@ int generarGramatica(gramatica *g, char *strNoTerminales, char *strTerminales, c
 		generarAxioma(g, strAxioma))
 		return 1;
 
-	printf("Gramatica obtenida: \n - No terminales: %s\n - Terminales: %s\n - Producciones: %s\n - Axioma: %c\n", g->noTerminales, g->terminales, prodsString, g->axioma);
+	printf("Gramatica obtenida: \n - No terminales: %s\n - Terminales: %s\n - Producciones: %s\n - Axioma: %c\n\n\n", g->noTerminales, g->terminales, prodsString, g->axioma);
 	free(prodsString);
 	return 0;
-}
-
-int contieneNoTerminal(gramatica *g, char *palabra)
-{
-	if (palabra[strlen(palabra) - 1] == g->noTerminales[0] || palabra[strlen(palabra) - 1] == g->noTerminales[1])
-	{
-		return 0;
-	}
-	return 1;
 }
 
 void construirPalabra(char *palabra, char *palabraAux)
@@ -101,56 +92,60 @@ void construirPalabra(char *palabra, char *palabraAux)
 	}
 }
 
-void obtenerNoTerminal(gramatica *g, char *palabra)
-{
-	int numRandom = obtenerNumeroRandomEntreRango(0, 2);
-	char noTerminal = palabra[strlen(palabra) - 1];
-	char palabraAux[MAX_LARGO_PRODUCCION] = "";
-	if (noTerminal == g->producciones[numRandom][0])
-	{
-		int pos = 0;
-		for (int i = 1; i < strlen(g->producciones[numRandom]); i++)
-		{
-			palabraAux[pos++] = g->producciones[numRandom][i];
-		}
-		construirPalabra(&palabra, palabraAux);
-	}
+int quedanNoTerminalParaDerivar(gramatica *g, char *palabra, int *posNT) { // terminada
+    // recorro la palabra hasta llegar al NT
+    for (int i = 0; i < strlen(palabra); i++){
+        printf("Caracter actual: \"%c\"\n", palabra[i]);
+        char caracterActual = palabra[i];
+        
+        // valido q el caracter sea un NT
+        if (strchr(g->noTerminales, caracterActual) != NULL) {
+            // seteo la posicion del NT
+            *posNT = i;
+            printf("Posicion del NT \"%c\": %d \n", caracterActual, *posNT);
+            return 1;
+        }
+        else 
+            printf("El caracter \"%c\" no es un No Terminal\n", caracterActual);
+    }
+    return 0;
 }
 
 void derivarGramatica(gramatica *g)
 {
-	char palabra[MAX_LARGO_PRODUCCION] = "";
+	char *palabra = malloc(sizeof(char));
+	
 	palabra[0] = g->axioma;
-	while (1)
+	
+	int posNT; // posicion del NT de la palabra
+	
+	while (quedanNoTerminalParaDerivar(g, palabra, &posNT))
 	{
-		obtenerNoTerminal(g, palabra);
-		if (contieneNoTerminal(g, palabra))
-		{
-			palabra[strlen(palabra)] = '\0';
-			break;
-		}
+	    // obtengo el NT en cuestion
+	    char noTerminal = palabra[posNT];
+	    // 
 	}
 	printf("Palabra: %s\n", palabra);
+	free(palabra);
 }
 
 // Formato de los argumentos: noTerminales terminales producciones axioma
-//                        EJ: (S,T; a,b; S-\>aT,T-\>a,T-\>bT; S)
+//                        EJ: (S,T a,b S-\>aT,T-\>a,T-\>bT S)
 // Cada argumento se separa con espacios y cada elemento de los mismos con comas. Hay que poner \ antes del > para que no quiera generar un archivo
 int main(int argc, char *argv[])
 {
 	// obtener e interpretar los argumentos, verificando que sea GF - Hecho, pero hardcodeado
 	gramatica g;
+	
 	if (generarGramatica(&g, argv[1], argv[2], argv[3], argv[4]))
-		return 1;
-
-	// Genera la palabra con los caracteres mostrados anteriormente
+	    return 1;
+    
 	derivarGramatica(&g);
 
 	// generar cadenas pertenecientes a la gramatica - to do
-	// int cantGramaticasGenerar = 10;
 	// printf("%d\n", obtenerNumeroRandomEntreRango(0, 2));
 	// printf("%d\n", obtenerNumeroRandomEntreRango(5, 10));
 	// printf("%d\n", obtenerNumeroRandomEntreRango(10, 100));
-
+		
 	return 0;
 }
