@@ -92,7 +92,6 @@ void construirPalabra(int posNT, char *palabra, char *parteDerechaProd)
 	// caso axioma
 	if (strlen(palabra) == 1) {
 		strcpy(palabra, parteDerechaProd);
-		printf("Caso axioma, quedo: %s\n", palabra);
 	}
 	// caso GRI
 	else if (posNT == 0) { // Tba
@@ -159,13 +158,16 @@ int obtenerIndiceProducciones(gramatica *g, char noTerminal, int *produccionesAu
 
 void derivarGramatica(gramatica *g)
 { // terminado
+    printf("--- Inicio de la derivacion ---\n");
 	char *palabra = malloc(sizeof(char));
 	int produccionesAux[MAX_CANT_PRODUCCIONES];
 	int numRandom;
 
 	palabra[0] = g->axioma;
-
+    printf("Palabra (caso axioma): %s\n", palabra); // esto es para printear como arranca
 	int posNT; // posicion del NT de la palabra
+	
+	int i = 0;
 
 	while (quedanNoTerminalParaDerivar(g, palabra, &posNT))
 	{
@@ -180,9 +182,9 @@ void derivarGramatica(gramatica *g)
 		obtenerParteDerechaProduccion(parteDerechaProdElegida, g->producciones[produccionesAux[numRandom]]);
 		
 		construirPalabra(posNT, palabra, parteDerechaProdElegida);
-		printf("Palabra: %s\n", palabra);
+		printf("Palabra iteracion %d:   %s\n", i++, palabra);
 	}
-	printf("Fin\n");
+	printf("---  Fin de la derivacion   ---\n\nResultado: %s", palabra);
 	free(palabra);
 }
 
