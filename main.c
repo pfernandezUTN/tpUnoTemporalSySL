@@ -38,19 +38,19 @@ int obtenerNumeroRandomEntreRango(int li, int ls)
 }
 
 int generarTerminales(gramatica *g, char *strTerminales)
-{ // hardcodeado
+{	// hardcodeado
 	strcpy(g->terminales, "ab");
 	return 0;
 }
 
 int generarNoTerminales(gramatica *g, char *strNoTerminales)
-{ // hardcodeado
+{	// hardcodeado
 	strcpy(g->noTerminales, "ST");
 	return 0;
 }
 
 int generarProducciones(gramatica *g, char *strProducciones, char *prodsString)
-{ // hardcodeado
+{	// hardcodeado
 	strcpy(g->producciones[0], "SaT");
 	strcpy(g->producciones[1], "Ta");
 	strcpy(g->producciones[2], "TbT");
@@ -74,9 +74,9 @@ int generarGramatica(gramatica *g, char *strNoTerminales, char *strTerminales, c
 	char *prodsString = malloc(sizeof(char) * (MAX_CANT_PRODUCCIONES * MAX_LARGO_PRODUCCION + (MAX_CANT_PRODUCCIONES * 3 - 1))); // lo ultimo es porque pongo " | " entre cada produccion
 
 	if (generarTerminales(g, strTerminales) ||
-		generarNoTerminales(g, strNoTerminales) ||
-		generarProducciones(g, strProducciones, prodsString) ||
-		generarAxioma(g, strAxioma))
+	        generarNoTerminales(g, strNoTerminales) ||
+	        generarProducciones(g, strProducciones, prodsString) ||
+	        generarAxioma(g, strAxioma))
 		return 1;
 
 	printf("Gramatica obtenida: \n - No terminales: %s\n - Terminales: %s\n - Producciones: %s\n - Axioma: %c\n\n\n", g->noTerminales, g->terminales, prodsString, g->axioma);
@@ -84,22 +84,40 @@ int generarGramatica(gramatica *g, char *strNoTerminales, char *strTerminales, c
 	return 0;
 }
 
-void construirPalabra(int posNT, char *palabra, char *palabraAux)
-{
-	int aux = posNT;
-	for (int i = 1; i < strlen(palabraAux); i++)
-	{
-		palabra[aux] = palabraAux[i];
-		aux++;
+
+
+void construirPalabra(int posNT, char *palabra, char *parteDerechaProd)
+{ // terminado
+    // Como siempre son GR, el NT o esta al principio (GRI) o esta al final (GRD)
+	// caso axioma
+	if (strlen(palabra) == 1) {
+		strcpy(palabra, parteDerechaProd);
+		printf("Caso axioma, quedo: %s\n", palabra);
+	}
+	// caso GRI
+	else if (posNT == 0) { // Tba
+		// concateno la produccion con la palabra sin el NT
+		char *buffer = malloc(sizeof(char));
+		sprintf(buffer, "%s%s", parteDerechaProd, palabra + 1); // palabra + 1 es para que sacar el NT
+		strcpy(palabra, buffer);
+		free(buffer);
+	}
+	// caso GRD
+	else {
+		char *aux = malloc(sizeof(char));
+		strncpy(aux, palabra, strlen(palabra) - 1); // le saco el ultimo caracter a la palabra (siendo este el NT)
+		strcat(aux, parteDerechaProd);
+		strcpy(palabra, aux);
+		free(aux);
 	}
 }
 
 int quedanNoTerminalParaDerivar(gramatica *g, char *palabra, int *posNT)
-{ // terminada
+{	// terminada
 	// recorro la palabra hasta llegar al NT
 	for (int i = 0; i < strlen(palabra); i++)
 	{
-		printf("Caracter actual: \"%c\"\n", palabra[i]);
+		//printf("Caracter actual: \"%c\"\n", palabra[i]);
 		char caracterActual = palabra[i];
 
 		// valido q el caracter sea un No Terminal
@@ -107,20 +125,26 @@ int quedanNoTerminalParaDerivar(gramatica *g, char *palabra, int *posNT)
 		{
 			// seteo la posicion del No Terminal
 			*posNT = i;
-			printf("Posicion del NT \"%c\": %d \n", caracterActual, *posNT);
+			//printf("Posicion del NT \"%c\": %d \n", caracterActual, *posNT);
 			return 1;
 		}
-		else
-			printf("El caracter \"%c\" no es un No Terminal\n", caracterActual);
+		else 
+		{ 
+		    //printf("El caracter \"%c\" no es un No Terminal\n", caracterActual);
+		}
 	}
 	return 0;
 }
 
-void obtenerIndiceProducciones(gramatica *g, char *noTerminal, char *produccionesAux)
-{
+void obtenerParteDerechaProduccion(char *parteDerecha, char *produccion) { // terminada
+	strncpy(parteDerecha, produccion + 1, 2);
+}
+
+int obtenerIndiceProducciones(gramatica *g, char noTerminal, int *produccionesAux)
+{ // terminado
 	int indice = 0;
 
-	for (int i = 0; i < 3; i++) // harcodeado largo de producciones
+	for (int i = 0; g->producciones[i][0] != '\0'; i++)
 	{
 		// guardar en nuevo array los indices de las producciones del noTerminal
 		if (g->producciones[i][0] == noTerminal)
@@ -129,10 +153,12 @@ void obtenerIndiceProducciones(gramatica *g, char *noTerminal, char *produccione
 			indice++;
 		}
 	}
+	
+	return indice++; 
 }
 
 void derivarGramatica(gramatica *g)
-{
+{ // terminado
 	char *palabra = malloc(sizeof(char));
 	int produccionesAux[MAX_CANT_PRODUCCIONES];
 	int numRandom;
@@ -145,12 +171,18 @@ void derivarGramatica(gramatica *g)
 	{
 		// obtengo el NT en cuestion
 		char noTerminal = palabra[posNT];
-		obtenerIndiceProducciones(g, noTerminal, produccionesAux);
+		int cantProdUsables = obtenerIndiceProducciones(g, noTerminal, produccionesAux);
+		
+		numRandom = obtenerNumeroRandomEntreRango(0, cantProdUsables); // harcodeado largo de produccionesAux
 
-		numRandom = obtenerNumeroRandomEntreRango(0, 1); // harcodeado largo de produccionesAux
-		construirPalabra(posNT, palabra[posNT], g->producciones[produccionesAux[numRandom]]);
+		// el largo es 2 xq las opciones son T o NT + T (siendo ambos de 1 unico caracter)
+		char parteDerechaProdElegida[2];
+		obtenerParteDerechaProduccion(parteDerechaProdElegida, g->producciones[produccionesAux[numRandom]]);
+		
+		construirPalabra(posNT, palabra, parteDerechaProdElegida);
 		printf("Palabra: %s\n", palabra);
 	}
+	printf("Fin\n");
 	free(palabra);
 }
 
@@ -166,11 +198,6 @@ int main(int argc, char *argv[])
 		return 1;
 
 	derivarGramatica(&g);
-
-	// generar cadenas pertenecientes a la gramatica - to do
-	// printf("%d\n", obtenerNumeroRandomEntreRango(0, 2));
-	// printf("%d\n", obtenerNumeroRandomEntreRango(5, 10));
-	// printf("%d\n", obtenerNumeroRandomEntreRango(10, 100));
-
+	
 	return 0;
 }
