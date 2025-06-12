@@ -318,6 +318,7 @@ int generarProducciones(gramatica *g, char *strProducciones, char *prodsString) 
 
 int generarAxioma(gramatica *g, char *strAxioma) {
 	// Verfica que el axioma sea uno solo
+	// Verfica que el axioma sea uno solo
 	if (strlen(strAxioma) != 1) {
 		printf("Error: Axioma invalido: \"%s\"", strAxioma);
 		return 1;
@@ -330,6 +331,7 @@ int generarAxioma(gramatica *g, char *strAxioma) {
 	}
 
 	g->axioma = strAxioma[0];
+    	printf("%c\n", g->axioma);
 	return 0;
 }
 
